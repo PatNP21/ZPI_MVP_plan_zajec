@@ -17,6 +17,13 @@ function App() {
       console.log(data)
       setCriteria(data)
     }
+
+    const convertExcelTimestamp = (timestamp) => {
+      const baseDate = new Date(1900, 0, 0)
+      const days = Math.floor(timestamp - 1)
+      //const seconds = (timestamp - days) * 86400
+      return new Date(baseDate.getTime() + (days * 86400) * 1000).toLocaleDateString('en-CA')
+    }
   
     const handleFileChange = (e) => {
       const file = e.target.files[0];
@@ -42,8 +49,9 @@ function App() {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
   
-          setData(jsonData.filter((a, index) => jsonData[index] && index <= 178));
-          console.log(jsonData.filter((a, index) => jsonData[index] && index <= 178))
+          setData(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4));
+          console.log(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4))
+          console.log(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
         } catch (error) {
           console.error('Błąd parsowania pliku:', error);
         }
@@ -55,6 +63,43 @@ function App() {
   
       reader.readAsBinaryString(file);
     };
+
+    const dataParser = (data) => {
+      const groupsCount = data.length / 5
+      const groups = []
+      for(let i=0; i<data.length; i+=5) {
+        let temp = {}
+        temp['0'] = {
+          'date': data[i]['__EMPTY_1'],
+          'day': convertExcelTimestamp(data[i+1]['__EMPTY']),
+        }
+        for(let j=1; j<=4; j++) {
+          temp[`${data[i+j]['__EMPTY_1']}`] = {
+            '11': data[i+j]['__EMPTY_3'],
+            '12': data[i+j]['__EMPTY_5'],
+            '13': data[i+j]['__EMPTY_7'],
+            '21': data[i+j]['__EMPTY_8'],
+            '22': data[i+j]['__EMPTY_10'],
+            '31': data[i+j]['__EMPTY_12'],
+            '32': data[i+j]['__EMPTY_14'],
+            '41': data[i+j]['__EMPTY_16'],
+            '42': data[i+j]['__EMPTY_18'],
+            'DS1_1': data[i+j]['__EMPTY_22'],
+            'DS2_1': data[i+j]['__EMPTY_23'],
+            'CY1_1': data[i+j]['__EMPTY_24'],
+            'CY2_1': data[i+j]['__EMPTY_25'],
+            'CY3_1': data[i+j]['__EMPTY_26'],
+            'CY1_3': data[i+j]['__EMPTY_27'],
+            'CY2_3': data[i+j]['__EMPTY_28'],
+            'CY3_3': data[i+j]['__EMPTY_29'],
+            'DS1_3': data[i+j]['__EMPTY_30'],
+          }
+        }
+        groups.push(temp)
+      }
+      
+      return groups
+    }
 
 
   return (
@@ -117,7 +162,7 @@ function App() {
       {data ? data.map(item => {
          if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem1' && criteria['selectedGroup'] === '11') {
           return (<div>
-            {moment.unix(Number(JSON.stringify(item["__EMPTY"]))).format('YYYY-MM-DD')}
+            {JSON.stringify(item["__EMPTY"]) && convertExcelTimestamp(Number(JSON.stringify(item["__EMPTY"])))}
             {JSON.stringify(item["__EMPTY_1"])}
             {JSON.stringify(item["__EMPTY_3"])}
           </div>)
