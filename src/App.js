@@ -2,12 +2,13 @@ import logo from './logo.svg';
 import * as XLSX from 'xlsx'
 import { useState } from 'react';
 import {useForm} from 'react-hook-form'
-import * as Calendar from 'react-calendar'
-import moment from 'moment'
+import Calendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css';
 import './App.css';
 
 function App() {
     const [data, setData] = useState([]);
+    const [date, setDate] = useState(new Date())
     const [criteria, setCriteria] = useState({})
 
     const {register, handleSubmit, watch} = useForm()
@@ -16,6 +17,19 @@ function App() {
     const changeCriteria = (data) => {
       console.log(data)
       setCriteria(data)
+      return criteria
+    }
+
+    const setDateToDisplay = () => {
+      let selectedDate = criteria.selectedDate
+      return selectedDate.toString()
+    }
+
+    const eventsForSelectedDate = (date) => {
+      if (data["0"].date === date) {
+        return data;
+      }
+      return null;
     }
 
     const convertExcelTimestamp = (timestamp) => {
@@ -49,9 +63,10 @@ function App() {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
   
-          setData(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4));
+          //setData(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4));
           console.log(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4))
           console.log(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
+          setData(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
         } catch (error) {
           console.error('Błąd parsowania pliku:', error);
         }
@@ -65,40 +80,47 @@ function App() {
     };
 
     const dataParser = (data) => {
-      const groupsCount = data.length / 5
+      //let clearData = data.splice(158,1)
+      let clearData = data.filter((obj, index) =>
+          !Object.values(obj).some(value => 
+            String(value).includes("BRAK ZAJĘĆ"))
+        );
+
+      
+      
       const groups = []
-      for(let i=0; i<data.length; i+=5) {
+      for(let i=0; i<clearData.length; i+=5) {
         let temp = {}
         temp['0'] = {
-          'date': data[i]['__EMPTY_1'],
-          'day': convertExcelTimestamp(data[i+1]['__EMPTY']),
+          'date': clearData[i]['__EMPTY_1'],
+          'day': convertExcelTimestamp(clearData[i+1]['__EMPTY']),
         }
         for(let j=1; j<=4; j++) {
-          temp[`${data[i+j]['__EMPTY_1']}`] = {
-            '11': data[i+j]['__EMPTY_3'],
-            '12': data[i+j]['__EMPTY_5'],
-            '13': data[i+j]['__EMPTY_7'],
-            '21': data[i+j]['__EMPTY_8'],
-            '22': data[i+j]['__EMPTY_10'],
-            '31': data[i+j]['__EMPTY_12'],
-            '32': data[i+j]['__EMPTY_14'],
-            '41': data[i+j]['__EMPTY_16'],
-            '42': data[i+j]['__EMPTY_18'],
-            'DS1_1': data[i+j]['__EMPTY_22'],
-            'DS2_1': data[i+j]['__EMPTY_23'],
-            'CY1_1': data[i+j]['__EMPTY_24'],
-            'CY2_1': data[i+j]['__EMPTY_25'],
-            'CY3_1': data[i+j]['__EMPTY_26'],
-            'CY1_3': data[i+j]['__EMPTY_27'],
-            'CY2_3': data[i+j]['__EMPTY_28'],
-            'CY3_3': data[i+j]['__EMPTY_29'],
-            'DS1_3': data[i+j]['__EMPTY_30'],
+          temp[`${clearData[i+j]['__EMPTY_1']}`] = {
+            '11': clearData[i+j]['__EMPTY_3'] || null,
+            '12': clearData[i+j]['__EMPTY_5'] || null,
+            '13': clearData[i+j]['__EMPTY_7'] || null,
+            '21': clearData[i+j]['__EMPTY_8'] || null,
+            '22': clearData[i+j]['__EMPTY_10'] || null,
+            '31': clearData[i+j]['__EMPTY_12'] || null,
+            '32': clearData[i+j]['__EMPTY_14'] || null,
+            '41': clearData[i+j]['__EMPTY_16'] || null,
+            '42': clearData[i+j]['__EMPTY_18'] || null,
+            'DS1_sem1': clearData[i+j]['__EMPTY_22'] || null,
+            'DS2_sem1': clearData[i+j]['__EMPTY_23'] || null,
+            'CY1_sem1': clearData[i+j]['__EMPTY_24'] || null,
+            'CY2_sem1': clearData[i+j]['__EMPTY_25'] || null,
+            'CY3_sem1': clearData[i+j]['__EMPTY_26'] || null,
+            'CY1_sem3': clearData[i+j]['__EMPTY_27'] || null,
+            'CY2_sem3': clearData[i+j]['__EMPTY_28'] || null,
+            'CY3_sem3': clearData[i+j]['__EMPTY_29'] || null,
+            'DS1_sem3': clearData[i+j]['__EMPTY_30'] || null,
           }
         }
         groups.push(temp)
       }
       
-      return groups
+      return groups.filter((a,index) => index <= 30)
     }
 
 
@@ -159,101 +181,34 @@ function App() {
         }
         <input type="submit" value="Submit"/>
       </form>
-      {data ? data.map(item => {
-         if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem1' && criteria['selectedGroup'] === '11') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY"]) && convertExcelTimestamp(Number(JSON.stringify(item["__EMPTY"])))}
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_3"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem1' && criteria['selectedGroup'] === '12') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_5"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem1' && criteria['selectedGroup'] === '13') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_7"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem3' && criteria['selectedGroup'] === '21') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_8"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem3' && criteria['selectedGroup'] === '22') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_10"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem5' && criteria['selectedGroup'] === '31') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_12"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem5' && criteria['selectedGroup'] === '32') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_14"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem7' && criteria['selectedGroup'] === '41') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_16"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '1' && criteria['selectedTerm'] === 'sem7' && criteria['selectedGroup'] === '42') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_18"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem1' && criteria['selectedSpecialization'] === 'ds' && criteria['selectedGroup'] === 'DS1') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_22"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem1' && criteria['selectedSpecialization'] === 'ds' && criteria['selectedGroup'] === 'DS2') {
-            return (<div>
-              {JSON.stringify(item["__EMPTY_1"])}
-              {JSON.stringify(item["__EMPTY_23"])}
-            </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem1' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY1') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_24"])}
-          </div>)
-        } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem1' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY2') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_25"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem1' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY3') {
-            return (<div>
-              {JSON.stringify(item["__EMPTY_1"])}
-              {JSON.stringify(item["__EMPTY_26"])}
-            </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem3' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY1') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_27"])}
-          </div>)
-        } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem3' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY2') {
-            return (<div>
-              {JSON.stringify(item["__EMPTY_1"])}
-              {JSON.stringify(item["__EMPTY_28"])}
-            </div>)
-        } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem3' && criteria['selectedSpecialization'] === 'cybsec' && criteria['selectedGroup'] === 'CY3') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_29"])}
-          </div>)
-         } else if(criteria && criteria['selectedDegree'] === '2' && criteria['selectedTerm'] === 'sem3' && criteria['selectedSpecialization'] === 'ds' && criteria['selectedGroup'] === 'DS1') {
-          return (<div>
-            {JSON.stringify(item["__EMPTY_1"])}
-            {JSON.stringify(item["__EMPTY_30"])}
-          </div>)
-         }
-        })
-         : null}
+      {/*(criteria && data) && 
+          <Calendar 
+            onChange={setDate} 
+            value={date}
+            tileContent={({ date, view }) => {
+              if (view === "month") {
+                const eventsOnDate = eventsForSelectedDate(date);
+                if (eventsOnDate) {
+                  return (
+                    <div style={{ fontSize: "10px", color: "blue" }}>
+                      {Object.keys(eventsOnDate)
+                        .filter((key) => key !== "0") // filtrujemy obiekt "0"
+                        .map((timeSlot, index) => (
+                          <div key={index}>
+                            {timeSlot}: {Object.entries(eventsOnDate[timeSlot]).map(([group, event], idx) => (
+                              <div key={idx}>
+                                {group}: {event}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                    </div>
+                  );
+                }
+              }
+            }}
+          />
+      */}
     </div>
   );
 }
