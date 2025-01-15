@@ -26,14 +26,11 @@ function App() {
     }
 
     const eventsForSelectedDate = (date) => {
-      if (data["0"].date === date) {
-        return data;
-      }
-      return null;
+      return data.filter(item => (item["0"].day === date))
     }
 
     const convertExcelTimestamp = (timestamp) => {
-      const baseDate = new Date(1900, 0, 0)
+      const baseDate = new Date(1900, 0, 1)
       const days = Math.floor(timestamp - 1)
       //const seconds = (timestamp - days) * 86400
       return new Date(baseDate.getTime() + (days * 86400) * 1000).toLocaleDateString('en-CA')
@@ -181,34 +178,45 @@ function App() {
         }
         <input type="submit" value="Submit"/>
       </form>
-      {/*(criteria && data) && 
+      {(criteria && data.length > 0) && 
           <Calendar 
-            onChange={setDate} 
             value={date}
-            tileContent={({ date, view }) => {
+            onClickDay={({ date, view }) => {
               if (view === "month") {
-                const eventsOnDate = eventsForSelectedDate(date);
-                if (eventsOnDate) {
-                  return (
-                    <div style={{ fontSize: "10px", color: "blue" }}>
-                      {Object.keys(eventsOnDate)
-                        .filter((key) => key !== "0") // filtrujemy obiekt "0"
-                        .map((timeSlot, index) => (
-                          <div key={index}>
-                            {timeSlot}: {Object.entries(eventsOnDate[timeSlot]).map(([group, event], idx) => (
-                              <div key={idx}>
-                                {group}: {event}
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                    </div>
-                  );
+                const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
+                if (eventsOnDate.length > 0) {
+                  eventsOnDate.map(item => {
+                    console.log(item)
+                    return (
+                      <div>
+                        <ul>
+                          {item["8:00-10:30"]}
+                        </ul>
+                      </div>
+                    )
+                  })
                 }
               }
-            }}
-          />
-      */}
+            }} 
+            tileContent={({ date, view }) => {
+              if (view === "month") {
+                const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
+                if (eventsOnDate.length > 0) {
+                  eventsOnDate.map(item => {
+                    return (
+                      <div>
+                        <ul>
+                          {item["8:00-10:30"]}
+                        </ul>
+                      </div>
+                    )
+                  })
+                } 
+              }
+            }
+          }
+        />
+      }
     </div>
   );
 }
