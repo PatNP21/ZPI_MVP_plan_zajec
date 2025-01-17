@@ -9,6 +9,7 @@ import './App.css';
 function App() {
     const [data, setData] = useState([]);
     const [date, setDate] = useState(new Date())
+    const [selectedEvents, setSelectedEvents] = useState([]);
     const [criteria, setCriteria] = useState({})
 
     const {register, handleSubmit, watch} = useForm()
@@ -25,7 +26,7 @@ function App() {
       return selectedDate.toString()
     }
 
-    const eventsForSelectedDate = (date) => {
+    const eventsForSelectedDate = (date, filterKey, filterValue) => {
       return data.filter(item => (item["0"].day === date))
     }
 
@@ -123,100 +124,145 @@ function App() {
 
   return (
     <div className="App">
+      <div className="form_view">
       <input type='file' onChange={handleFileChange}/>
-      <form onSubmit={handleSubmit(changeCriteria)}>
-        <label>Wybierz stopień studiów</label>
-        <select {...register('selectedDegree')}>
-          <option value="1">I stopnia</option>
-          <option value="2">II stopnia</option>
-        </select>
-        {(selectedDegree && selectedDegree == "2") && <div>
-            <label>Wybierz specjalizację</label>
-            <select {...register('selectedSpecialization')}>
-              <option value="cybsec">Cyberbezpieczeństwo</option>
-              <option value="ds">Data Science</option>
-            </select>
-            <br/>
-            <label>Wybierz semestr</label>
-            <select {...register('selectedTerm')}>
-              <option value="sem1">Pierwszy</option>
-              <option value="sem3">Trzeci</option>
-            </select>
-            <br/>
-            <label>Wybierz grupę</label>
-            <select {...register('selectedGroup')}>
-              <option value="CY1">CY1</option>
-              <option value="CY2">CY2</option>
-              <option value="CY3">CY3</option>
-              <option value="DS1">DS1</option>
-              <option value="DS2">DS2</option>
-            </select>
-          </div>
-        }
-        {(selectedDegree && selectedDegree == "1") && <div>
-            <label>Wybierz semestr</label>
-            <select {...register('selectedTerm')}>
-              <option value="sem1">Pierwszy</option>
-              <option value="sem3">Trzeci</option>
-              <option value="sem5">Piąty</option>
-              <option value="sem7">Siódmy</option>
-            </select>
-            <br/>
-            <label>Wybierz grupę</label>
-            <select {...register('selectedGroup')}>
-              <option value="11">11</option>
-              <option value="12">12</option>
-              <option value="13">13</option>
-              <option value="21">21</option>
-              <option value="22">22</option>
-              <option value="31">31</option>
-              <option value="32">32</option>
-              <option value="41">41</option>
-              <option value="42">42</option>
-            </select>
-          </div>
-        }
-        <input type="submit" value="Submit"/>
-      </form>
+        <form onSubmit={handleSubmit(changeCriteria)} className='the_form'>
+          <label>Wybierz stopień studiów</label>
+          <select {...register('selectedDegree')}>
+            <option value="1">I stopnia</option>
+            <option value="2">II stopnia</option>
+          </select>
+          {(selectedDegree && selectedDegree == "2") && <div>
+              <label>Wybierz specjalizację</label>
+              <select {...register('selectedSpecialization')}>
+                <option value="cybsec">Cyberbezpieczeństwo</option>
+                <option value="ds">Data Science</option>
+              </select>
+              <br/>
+              <label>Wybierz semestr</label>
+              <select {...register('selectedTerm')}>
+                <option value="sem1">Pierwszy</option>
+                <option value="sem3">Trzeci</option>
+              </select>
+              <br/>
+              <label>Wybierz grupę</label>
+              <select {...register('selectedGroup')}>
+                <option value="CY1">CY1</option>
+                <option value="CY2">CY2</option>
+                <option value="CY3">CY3</option>
+                <option value="DS1">DS1</option>
+                <option value="DS2">DS2</option>
+              </select>
+            </div>
+          }
+          {(selectedDegree && selectedDegree == "1") && <div>
+              <label>Wybierz semestr</label>
+              <select {...register('selectedTerm')}>
+                <option value="sem1">Pierwszy</option>
+                <option value="sem3">Trzeci</option>
+                <option value="sem5">Piąty</option>
+                <option value="sem7">Siódmy</option>
+              </select>
+              <br/>
+              <label>Wybierz grupę</label>
+              <select {...register('selectedGroup')}>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="21">21</option>
+                <option value="22">22</option>
+                <option value="31">31</option>
+                <option value="32">32</option>
+                <option value="41">41</option>
+                <option value="42">42</option>
+              </select>
+            </div>
+          }
+          <input type="submit" value="Submit"/>
+        </form>
+      </div>
       {(criteria && data.length > 0) && 
           <Calendar 
             value={date}
             onClickDay={({ date, view }) => {
               if (view === "month") {
                 const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
-                if (eventsOnDate.length > 0) {
-                  eventsOnDate.map(item => {
-                    console.log(item)
-                    return (
-                      <div>
-                        <ul>
-                          {item["8:00-10:30"]}
-                        </ul>
-                      </div>
-                    )
-                  })
-                }
+                setSelectedEvents(eventsOnDate);
               }
-            }} 
+            }}
+            showNeighboringMonth={false}
             tileContent={({ date, view }) => {
-              if (view === "month") {
+              if (view === "month" && (date.getDay() === 6 || date.getDay() == 0)) {
                 const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
                 if (eventsOnDate.length > 0) {
-                  eventsOnDate.map(item => {
-                    return (
-                      <div>
-                        <ul>
-                          {item["8:00-10:30"]}
-                        </ul>
-                      </div>
-                    )
-                  })
-                } 
+                  return (
+                    <div>
+                      {eventsOnDate.map((item, index) => (
+                        <div key={index}>
+                          <ul>
+                            <h5>8:00-10:30</h5>
+                            {item["8:00-10:30"]
+                              ? Object.entries(item["8:00-10:30"]).filter(([key, value]) => {
+                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                              }).map(([key, value]) => (
+                                  <li key={key}>
+                                    <h6>{value}</h6>
+                                  </li>
+                                ))
+                              : "No events"}
+                            <h5>10:45-13:15</h5>
+                            {item["10:45-13:15"]
+                              ? Object.entries(item["10:45-13:15"]).filter(([key, value]) => {
+                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                              }).map(([key, value]) => (
+                                  <li key={key}>
+                                    <h6>{value}</h6>
+                                  </li>
+                                ))
+                              : "No events"}
+                            <h5>14:00-16:30</h5>
+                            {item["14:00-16:30"]
+                              ? Object.entries(item["14:00-16:30"]).filter(([key, value]) => {
+                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                              }).map(([key, value]) => (
+                                  <li key={key}>
+                                    <h6>{value}</h6>
+                                  </li>
+                                ))
+                              : "No events"}
+                            <h5>16:45-19:15</h5>
+                            {item["16:45-19:15"]
+                              ? Object.entries(item["16:45-19:15"]).filter(([key, value]) => {
+                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                              }).map(([key, value]) => (
+                                  <li key={key}>
+                                    <h6>{value}</h6>
+                                  </li>
+                                ))
+                              : "No events"}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
               }
+              return null; // Jeśli brak danych, zwracaj null
             }
           }
         />
       }
+      <div>
+        {selectedEvents && selectedEvents.map((item, index) => (
+          <ul key={index}>
+            {item["8:00-10:30"]}
+          </ul>
+        ))}
+      </div>
     </div>
   );
 }
