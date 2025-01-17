@@ -19,26 +19,50 @@ h5, h6 {
 
 .form_view {
   height: 100vh;
-  width:40%;
+  width:10%;
+  position: fixed;
+  display: inline-block;
   float: left;
   border: 1px solid #666;
   border-radius: 10px;
   box-shadow: 0 0 3px 3px;
 }
 
+.form_view > input, select {
+  width: 80%;
+  background-color: #aaa;
+  display: block;
+  margin: 3px auto;
+}
+
+.form_view label {
+  display: block;
+  font-size: 16px;
+  margin: 3px auto;
+}
+
+.calendarView {
+  width:auto;
+  overflow: scroll;
+  position: relative;
+  left:10vw;
+  display: inline-block;
+}
+
 .react-calendar {
-  width: 700%;
+  width: 78%;
+  margin-left: 1vw;
   max-width: 80%;
-  height:70vh;
+  height:fit-content;
   background: white;
   font-family: 'Arial', 'Helvetica', sans-serif;
-  line-height: 1.125em;
+  float: left;
 }
 
 .react-calendar__tile, .react-calendar__tile--now, .react-calendar__tile--active {
   display: block;
   max-width: 80%;
-  max-height: 12vh;
+  min-width: 8%;
   min-height: 7vh;
   overflow: scroll;
   box-shadow: 3px 3px lightblue;

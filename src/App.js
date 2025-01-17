@@ -181,88 +181,83 @@ function App() {
           <input type="submit" value="Submit"/>
         </form>
       </div>
-      {(criteria && data.length > 0) && 
-          <Calendar 
-            value={date}
-            onClickDay={({ date, view }) => {
-              if (view === "month") {
-                const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
-                setSelectedEvents(eventsOnDate);
-              }
-            }}
-            showNeighboringMonth={false}
-            tileContent={({ date, view }) => {
-              if (view === "month" && (date.getDay() === 6 || date.getDay() == 0)) {
-                const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
-                if (eventsOnDate.length > 0) {
-                  return (
-                    <div>
-                      {eventsOnDate.map((item, index) => (
-                        <div key={index}>
-                          <ul>
-                            <h5>8:00-10:30</h5>
-                            {item["8:00-10:30"]
-                              ? Object.entries(item["8:00-10:30"]).filter(([key, value]) => {
-                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
-                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
-                              }).map(([key, value]) => (
-                                  <li key={key}>
-                                    <h6>{value}</h6>
-                                  </li>
-                                ))
-                              : "No events"}
-                            <h5>10:45-13:15</h5>
-                            {item["10:45-13:15"]
-                              ? Object.entries(item["10:45-13:15"]).filter(([key, value]) => {
-                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
-                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
-                              }).map(([key, value]) => (
-                                  <li key={key}>
-                                    <h6>{value}</h6>
-                                  </li>
-                                ))
-                              : "No events"}
-                            <h5>14:00-16:30</h5>
-                            {item["14:00-16:30"]
-                              ? Object.entries(item["14:00-16:30"]).filter(([key, value]) => {
-                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
-                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
-                              }).map(([key, value]) => (
-                                  <li key={key}>
-                                    <h6>{value}</h6>
-                                  </li>
-                                ))
-                              : "No events"}
-                            <h5>16:45-19:15</h5>
-                            {item["16:45-19:15"]
-                              ? Object.entries(item["16:45-19:15"]).filter(([key, value]) => {
-                                if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
-                                else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
-                              }).map(([key, value]) => (
-                                  <li key={key}>
-                                    <h6>{value}</h6>
-                                  </li>
-                                ))
-                              : "No events"}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  );
+      <div className='calendarView'>
+        {(criteria && data.length > 0) && 
+            <Calendar 
+              value={date}
+              onClickDay={({ date, view }) => {
+                if (view === "month") {
+                  const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
+                  setSelectedEvents(eventsOnDate);
                 }
+              }}
+              tileContent={({ date, view }) => {
+                if (view === "month") {
+                  const eventsOnDate = eventsForSelectedDate(date.toLocaleDateString('en-CA'));
+                  if (eventsOnDate.length > 0) {
+                    return (
+                      <div>
+                        {eventsOnDate.map((item, index) => (
+                          <div key={index}>
+                            <ul>
+                              <h5>8:00-10:30</h5>
+                              {item["8:00-10:30"]
+                                ? Object.entries(item["8:00-10:30"]).filter(([key, value]) => {
+                                  if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                  else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                                }).map(([key, value]) => (
+                                    <li key={key}>
+                                      <h6>{value}</h6>
+                                    </li>
+                                  ))
+                                : "No events"}
+                              <h5>10:45-13:15</h5>
+                              {item["10:45-13:15"]
+                                ? Object.entries(item["10:45-13:15"]).filter(([key, value]) => {
+                                  if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                  else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                                }).map(([key, value]) => (
+                                    <li key={key}>
+                                      <h6>{value}</h6>
+                                    </li>
+                                  ))
+                                : "No events"}
+                              <h5>14:00-16:30</h5>
+                              {item["14:00-16:30"]
+                                ? Object.entries(item["14:00-16:30"]).filter(([key, value]) => {
+                                  if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                  else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                                }).map(([key, value]) => (
+                                    <li key={key}>
+                                      <h6>{value}</h6>
+                                    </li>
+                                  ))
+                                : "No events"}
+                              <h5>16:45-19:15</h5>
+                              {item["16:45-19:15"]
+                                ? Object.entries(item["16:45-19:15"]).filter(([key, value]) => {
+                                  if(criteria.selectedDegree === '1') return key == criteria.selectedGroup
+                                  else return key == `${criteria.selectedGroup}_${criteria.selectedTerm}`
+                                }).map(([key, value]) => (
+                                    <li key={key}>
+                                      <h6>{value}</h6>
+                                    </li>
+                                  ))
+                                : "No events"}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                }
+                return null;
               }
-              return null; // Jeśli brak danych, zwracaj null
             }
-          }
-        />
-      }
-      <div>
-        {selectedEvents && selectedEvents.map((item, index) => (
-          <ul key={index}>
-            {item["8:00-10:30"]}
-          </ul>
-        ))}
+          />
+        }
       </div>
+      
     </div>
   );
 }
