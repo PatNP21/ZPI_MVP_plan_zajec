@@ -1,6 +1,5 @@
-import logo from './logo.svg';
 import * as XLSX from 'xlsx'
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css';
@@ -36,46 +35,49 @@ function App() {
       //const seconds = (timestamp - days) * 86400
       return new Date(baseDate.getTime() + (days * 86400) * 1000).toLocaleDateString('en-CA')
     }
-  
-    const handleFileChange = (e) => {
-      const file = e.target.files[0];
-  
-      if (!file) {
-        console.error('Nie wybrano pliku.');
-        return;
-      }
-  
-      if (!file.type.match(/application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet|application\/vnd\.ms-excel/)) {
-        console.error('Nieprawidłowy typ pliku. Wybierz plik Excel.');
-        return;
-      }
-  
-      const reader = new FileReader();
-  
-      reader.onload = (event) => {
+
+    useEffect(() => {
+        fetchAndParseFile();
+    }, []);
+
+    const fetchAndParseFile = async () => {
         try {
-          const binaryStr = event.target.result;
-          const workbook = XLSX.read(binaryStr, { type: 'binary' });
-  
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-  
-          //setData(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4));
-          console.log(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4))
-          console.log(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
-          setData(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
+            const response = await fetch('http://localhost:8080/download');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const blob = await response.blob();
+
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                try {
+                    const binaryStr = event.target.result;
+                    const workbook = XLSX.read(binaryStr, { type: 'binary' });
+
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    //setData(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4));
+                    console.log(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4))
+                    console.log(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
+                    setData(dataParser(jsonData.filter((a, index) => jsonData[index] && index <= 178 && index >= 4)))
+                } catch (error) {
+                    console.error('Błąd parsowania pliku:', error);
+                }
+            };
+
+            reader.onerror = (error) => {
+                console.error('Błąd odczytu pliku:', error);
+            };
+
+            reader.readAsBinaryString(blob);
         } catch (error) {
-          console.error('Błąd parsowania pliku:', error);
+            console.error('Błąd pobierania pliku:', error);
         }
-      };
-  
-      reader.onerror = (error) => {
-        console.error('Błąd odczytu pliku:', error);
-      };
-  
-      reader.readAsBinaryString(file);
     };
+
 
     const dataParser = (data) => {
       //let clearData = data.splice(158,1)
@@ -125,7 +127,6 @@ function App() {
   return (
     <div className="App">
       <div className="form_view">
-      <input type='file' onChange={handleFileChange}/>
         <form onSubmit={handleSubmit(changeCriteria)} className='the_form'>
           <label>Wybierz stopień studiów</label>
           <select {...register('selectedDegree')}>
